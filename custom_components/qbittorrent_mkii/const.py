@@ -1,10 +1,10 @@
-"""Constants for qBittorrent_MkII"""
+"""Constants for qBittorrent"""
 from typing import Final
 from datetime import timedelta
 import voluptuous as vol
 import logging
 
-DOMAIN: Final = "qbittorrent_mkii"
+DOMAIN: Final = "qbittorrent"
 
 #Defaults
 DEFAULT_NAME = "qBittorrent" #This is the base sensor and display name, that will have the target hostname added for uniqueness

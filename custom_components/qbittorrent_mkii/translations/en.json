@@ -1,5 +1,5 @@
 {
-    "title": "qBittorrent MkII",
+    "title": "qBittorrent",
     "config": {
         "step": {
             "user": {
@@ -10,7 +10,7 @@
                     "verify_ssl": "Verify SSL?",
                     "scan_interval": "Sensor update interval (seconds)"
                 },
-                "title": "qBittorrent MkII",
+                "title": "qBittorrent",
                 "description": "{action} the connection information for your qBittorrent instance"
             }
         },
@@ -38,7 +38,7 @@
                     "torrent_removed": "A torrent is removed",
                     "event_scan_interval": "Minimum event interval (seconds)"
                 },
-                "title": "qBittorrent MkII",
+                "title": "qBittorrent",
                 "description": "Select the events that should be raised based on qBittorrent activity"
             }
         }
