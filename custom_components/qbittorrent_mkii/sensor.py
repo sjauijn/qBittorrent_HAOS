@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 
 import qbittorrentapi
-from qbittorrentapi import Client, LoginFailed, APIConnectionError
+from qbittorrentapi import Client, LoginFailed, APIConnectionError, Forbidden403Error
 from requests.exceptions import RequestException, ConnectTimeout
 import voluptuous as vol
 
@@ -106,10 +106,9 @@ async def async_setup_entry(
 
     """Set up qBittorrent sensor entries."""
     client: Client = hass.data[DOMAIN][config_entry.entry_id]
-    qb_version = await hass.async_add_executor_job(get_version, client)
-    
+
     entities = [
-        QBittorrentSensor(hass, description, config_entry, client, qb_version)
+        QBittorrentSensor(hass, description, config_entry, client, None)
         for description in SENSOR_TYPES
     ]
 
@@ -143,6 +142,7 @@ class QBittorrentSensor(SensorEntity):
 
         self._attr_unique_id = f"{config_entry.entry_id}-{description.key}"
         self._attr_name = f"{config_entry.title} {description.name}"
+        self._attr_available = False
 
     def update(self) -> None:
         """Get the latest data from qBittorrent and updates the state."""
@@ -158,6 +158,9 @@ class QBittorrentSensor(SensorEntity):
                 # Get the most recent data from the API
                 data = self.client.sync_maindata()
                 self._attr_available = True
+
+                if self.qb_version is None:
+                    self.qb_version = get_version(self.client)
 
         except LoginFailed as ex:
             # Bad username or password - assume that something has changed at the QBittorrent end

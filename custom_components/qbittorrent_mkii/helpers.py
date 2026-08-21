@@ -22,20 +22,17 @@ _LOGGER = logging.getLogger(__name__)
 
 all_torrents_prev = []
 
-def setup_client(url: str, username: str, password: str, verify_ssl: bool):
-    # Errors raised will be captured by the calling function
+def create_client(url: str, verify_ssl: bool):
+    return qbittorrentapi.Client(host=url, VERIFY_WEBUI_CERTIFICATE=verify_ssl, SIMPLE_RESPONSES=True, REQUESTS_ARGS={'timeout': (3, 5)})
 
+
+def login_client(client, username: str, password: str):
     try:
-        client = qbittorrentapi.Client(host = url, VERIFY_WEBUI_CERTIFICATE = verify_ssl, SIMPLE_RESPONSES = True, REQUESTS_ARGS={'timeout': (3, 5)})
-
-        # Test the provided credentials
-        client.auth_log_in(username = username, password = password)
-
-        return client
+        client.auth_log_in(username=username, password=password)
 
     except LoginFailed as ex:
         raise LoginFailed from ex
- 
+
     except Forbidden403Error as ex:
         raise Forbidden403Error from ex
 
@@ -46,7 +43,13 @@ def setup_client(url: str, username: str, password: str, verify_ssl: bool):
         raise ConnectTimeout from ex
 
     except Exception as ex:
-        raise RequestException from ex 
+        raise RequestException from ex
+
+
+def setup_client(url: str, username: str, password: str, verify_ssl: bool):
+    client = create_client(url, verify_ssl)
+    login_client(client, username, password)
+    return client
 
 # Return all torrents in the list
 def find_torrent(torrent_list, default=None):

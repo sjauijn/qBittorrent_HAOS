@@ -19,7 +19,7 @@ from homeassistant.exceptions import ConfigEntryNotReady, ConfigEntryAuthFailed
 from homeassistant.helpers.event import async_track_time_interval
 
 from .const import *
-from .helpers import setup_client
+from .helpers import create_client, login_client
 from .events import QBEventsAndActions
 
 _LOGGER = logging.getLogger(__name__)
@@ -29,35 +29,13 @@ PLATFORMS = [Platform.SENSOR]
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Set up qBittorrent from a config entry."""
     hass.data.setdefault(DOMAIN, {})
-    
-    try:
 
-        client = await hass.async_add_executor_job(
-            setup_client,
-            config_entry.data[CONF_URL],
-            config_entry.data[CONF_USERNAME],
-            config_entry.data[CONF_PASSWORD],
-            config_entry.data[CONF_VERIFY_SSL],
-        )
-        hass.data[DOMAIN][config_entry.entry_id] = client
-
-    # Raising ConfigEntryNotReady means HA will automatically retry setup again later
-    # Raising ConfigEntryAuthFailed means HA will show the re-auth process and stop retrying until new credtentials are provided
-
-    except LoginFailed as ex:
-        raise ConfigEntryAuthFailed(f"Invalid credentials") from ex
-
-    except Forbidden403Error as ex:
-        raise ConfigEntryNotReady(f"Login denied") from ex
-
-    except APIConnectionError as ex:
-        raise ConfigEntryNotReady(f"Unknown API failure") from ex
-
-    except ConnectTimeout as ex:
-        raise ConfigEntryNotReady(f"Connection timeout") from ex
-
-    except Exception as ex:
-        raise ConfigEntryNotReady(f"Unknown error") from ex
+    client = await hass.async_add_executor_job(
+        create_client,
+        config_entry.data[CONF_URL],
+        config_entry.data[CONF_VERIFY_SSL],
+    )
+    hass.data[DOMAIN][config_entry.entry_id] = client
 
     event_handler = QBEventsAndActions(hass, config_entry)
 
@@ -74,6 +52,23 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     hass.data[DOMAIN][CONF_EVENT_SCAN_INTERVAL] = async_track_time_interval(
         hass, event_handler.raise_events,
         timedelta(seconds=config_entry.options.get(CONF_EVENT_SCAN_INTERVAL, DEFAULT_EVENT_SCAN_INTERVAL))
+    )
+
+    async def _try_initial_login() -> None:
+        try:
+            await hass.async_add_executor_job(
+                login_client,
+                client,
+                config_entry.data[CONF_USERNAME],
+                config_entry.data[CONF_PASSWORD],
+            )
+        except LoginFailed:
+            hass.add_job(config_entry.async_start_reauth, hass)
+        except Exception as ex:
+            _LOGGER.warning(f"Could not log in to qBittorrent at startup: {ex}")
+
+    config_entry.async_create_background_task(
+        hass, _try_initial_login(), "qbittorrent_initial_login"
     )
 
     return True
