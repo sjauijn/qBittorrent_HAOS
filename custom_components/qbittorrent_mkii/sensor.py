@@ -150,12 +150,10 @@ class QBittorrentSensor(SensorEntity):
 
         try:
             if not self._attr_available:
-                # Try to log in again to recreate the session or update the cookie
                 LOGGER.debug(f"Attempting to log in after disconnection")
                 self.client.auth_log_in()
 
             if self.client.is_logged_in:
-                # Get the most recent data from the API
                 data = self.client.sync_maindata()
                 self._attr_available = True
 
@@ -163,7 +161,6 @@ class QBittorrentSensor(SensorEntity):
                     self.qb_version = get_version(self.client)
 
         except LoginFailed as ex:
-            # Bad username or password - assume that something has changed at the QBittorrent end
             LOGGER.warning(f"Error {ex} attempting to re-authenticate")
             self.hass.add_job(self.config_entry.async_start_reauth, self.hass)
             self._attr_available = False
@@ -195,7 +192,6 @@ class QBittorrentSensor(SensorEntity):
             return
 
         except Exception as ex:
-            # General failure
             LOGGER.error(f"Error {ex} attempting to retrieve data")
             self._attr_available = False
 

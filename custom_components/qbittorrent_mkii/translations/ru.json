@@ -1,0 +1,45 @@
+{
+    "title": "qBittorrent",
+    "config": {
+        "step": {
+            "user": {
+                "data": {
+                    "username": "Имя пользователя WebUI",
+                    "password": "Пароль WebUI",
+                    "url": "URL WebUI",
+                    "verify_ssl": "Проверять SSL?",
+                    "scan_interval": "Интервал обновления сенсоров (секунды)"
+                },
+                "title": "qBittorrent",
+                "description": "{action} данные подключения к вашему экземпляру qBittorrent"
+            }
+        },
+        "error": {
+            "cannot_connect": "Не удалось подключиться",
+            "invalid_auth": "Неверное имя пользователя или пароль",
+            "blocked_connection": "Подключение заблокировано API — попробуйте позже",
+            "api_error": "Неизвестная ошибка подключения к API",
+            "request_exception": "Неоднозначная ошибка при подключении",
+            "connection_timeout": "Тайм-аут подключения"
+        },
+        "abort": {
+            "already_configured": "Запись для {ipaddress} уже существует",
+            "reauth_successful": "Повторная авторизация выполнена успешно",
+            "reconfigure_successful": "Настройки успешно изменены"
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "torrent_complete": "Торрент завершён, то есть загрузка окончена",
+                    "torrent_added": "Торрент добавлен",
+                    "torrent_removed": "Торрент удалён",
+                    "event_scan_interval": "Минимальный интервал событий (секунды)"
+                },
+                "title": "qBittorrent",
+                "description": "Выберите события, которые должны создаваться на основе активности qBittorrent"
+            }
+        }
+    }
+}

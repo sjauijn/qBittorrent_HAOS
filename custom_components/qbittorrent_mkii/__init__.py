@@ -42,13 +42,11 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
 
     try:
-        """Cancel any currently running event timer"""
         hass.data[DOMAIN][CONF_EVENT_SCAN_INTERVAL]()
 
     except:
         pass
-    
-    """Create a new event timer"""
+
     hass.data[DOMAIN][CONF_EVENT_SCAN_INTERVAL] = async_track_time_interval(
         hass, event_handler.raise_events,
         timedelta(seconds=config_entry.options.get(CONF_EVENT_SCAN_INTERVAL, DEFAULT_EVENT_SCAN_INTERVAL))
@@ -78,7 +76,6 @@ async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> 
     """Unload qBittorrent config entry."""
 
     try:
-        # Disconnect the qBittorrent client
         hass.data[DOMAIN][config_entry.entry_id].auth_log_out()
     except:
         pass

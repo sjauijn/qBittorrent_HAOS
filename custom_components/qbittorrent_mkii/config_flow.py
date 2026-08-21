@@ -38,7 +38,6 @@ class QbittorrentConfigFlow(ConfigFlow, domain=DOMAIN):
         errors = {}
 
         if user_input is not None:
-            # Update the previous entry data with whatever the user has just entered
             self._user_input.update(user_input)
             if not errors:
                 if self.source not in (SOURCE_RECONFIGURE, SOURCE_REAUTH):
@@ -47,7 +46,6 @@ class QbittorrentConfigFlow(ConfigFlow, domain=DOMAIN):
                         description_placeholders = {"ipaddress": urlparse(self._user_input[CONF_URL]).hostname}
                         )
 
-                # Check the (new) credentials
                 try:
                     client = None
                     client = await self.hass.async_add_executor_job(
@@ -59,13 +57,11 @@ class QbittorrentConfigFlow(ConfigFlow, domain=DOMAIN):
                     )
 
                     if self.source not in (SOURCE_RECONFIGURE, SOURCE_REAUTH):
-                        # Create a new entry
                         return self.async_create_entry (
                             title=DEFAULT_NAME + ' - ' + urlparse(self._user_input[CONF_URL]).hostname,
                             data=self._user_input
                             )
                     else:
-                        # Just update and reload the existing entry
                         if self.source == SOURCE_RECONFIGURE:
                             config_entry = self._get_reconfigure_entry()
                             reason = "reconfigure_successful"
@@ -98,8 +94,6 @@ class QbittorrentConfigFlow(ConfigFlow, domain=DOMAIN):
                 except Exception as ex:
                     errors = {"base": "unknown"}
 
-        # We'll only get here if there's an error with the filled-in form, or it's the first time showing the form
-        # Each scenario has a slightly different schema requirement, unfortunately
         if self.source == SOURCE_REAUTH:
             config_entry = self._get_reauth_entry()
             self._user_input = dict(config_entry.data)
@@ -184,8 +178,7 @@ class qBittorrentOptionsFlowHandler(config_entries.OptionsFlow):
                 await self.hass.config_entries.async_reload(self.config_entry.entry_id)
 
             return self.async_create_entry(title="", data=user_input)
-        
-        """Show the options form"""
+
         return self.async_show_form(step_id="init", 
             data_schema=vol.Schema({
                     vol.Optional(CONF_EVENT_COMPLETE, default=self.config_entry.options.get(CONF_EVENT_COMPLETE, DEFAULT_EVENT_COMPLETE)): bool,

@@ -51,7 +51,6 @@ def setup_client(url: str, username: str, password: str, verify_ssl: bool):
     login_client(client, username, password)
     return client
 
-# Return all torrents in the list
 def find_torrent(torrent_list, default=None):
     try:
         for x in torrent_list:
@@ -59,7 +58,6 @@ def find_torrent(torrent_list, default=None):
     except:
         return default
 
-# Return a specific torrent attribute or an empty string
 def get_detail(torrent, attribute):
     try:
         value = torrent[attribute]
@@ -69,7 +67,6 @@ def get_detail(torrent, attribute):
     
     return value
     
-# Return the version of the remote client
 def get_version(client: Client):
     try:
         return client.app.version
@@ -77,24 +74,17 @@ def get_version(client: Client):
     except:
         return None
 
-# Compare the list of torrents with the last check, looking for newly added, removed and completed torrents
 def compare_torrents(client: Client):
-    #Return a list containing all changed torrents and their new state
     global all_torrents_prev
     
     completed_torrents= []
     added_torrents= []
     removed_torrents = []
 
-    #Retrieve current torrent info    
     all_torrents = client.torrents_info()
 
-    #Cater for a fresh startup - we don't want to raise a ton of events straight away
     if all_torrents_prev:
         for torrent in all_torrents_prev:
-            #See if each torrent is still in the new list
-            #If not, it's been deleted
-            #If so, check the completion_on value - has it finished?
             prev_name = torrent['name']
             prev_hash = torrent['hash']
             prev_completion_on = torrent['completion_on']
@@ -103,16 +93,13 @@ def compare_torrents(client: Client):
             if found_torrent is not None:
                 if found_torrent['completion_on'] != prev_completion_on:
 
-                    #See if it's just completed downloading
                     if found_torrent['completion_on'] > 0:
-                        #It's just finished downloading
                         completed_torrents.append (found_torrent)
 
             else:
                 removed_torrents.append(torrent)
 
         for torrent in all_torrents:
-            #See if any new torrents have been added - it won't be in the previous list
             name = torrent['name']
             hash = torrent['hash']
 
@@ -124,7 +111,6 @@ def compare_torrents(client: Client):
  
     return completed_torrents, added_torrents, removed_torrents
 
-# Pause the targeted torrent(s)
 def pause_downloads(client: Client, hash: str):
     if hash != '' and hash != 'all':
         try:
@@ -136,7 +122,6 @@ def pause_downloads(client: Client, hash: str):
         client.torrents_pause('all')
     
 
-# Resume the targeted torrent(s)
 def resume_downloads(client: Client, hash: str):
     if hash != '' and hash != 'all':
         try:
@@ -148,7 +133,6 @@ def resume_downloads(client: Client, hash: str):
         client.torrents_resume('all')
     
 
-# Delete the targeted torrent
 def delete_torrent(client: Client, hash: str, delete_files: bool):
     if hash is not None:
         try:
@@ -157,7 +141,6 @@ def delete_torrent(client: Client, hash: str, delete_files: bool):
         except Exception as err:
             LOGGER.warn(f"Unable to delete torrent '{hash}'")
 
-# Return an array of torrent information based on the provided criteria
 def get_torrent_info(client: Client, hash: str = None, status_filter: str = "all"):
     if hash == "" or hash == "all":
         hash = None
@@ -189,7 +172,6 @@ def get_torrent_info(client: Client, hash: str = None, status_filter: str = "all
 
             return {}
 
-# Attempt to shut down the remote client
 def shutdown(client: Client):
     try:
         client.app.shutdown()
